@@ -97,6 +97,7 @@ dependencies {
     // Mapbox
     implementation("com.mapbox.maps:android:11.11.0")
     implementation("com.mapbox.extension:maps-compose:11.11.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
@@ -105,6 +106,12 @@ dependencies {
 
     // Google Fonts
     implementation ("androidx.compose.ui:ui-text-google-fonts:1.7.3")
+
+    // Para hacer HTTP simple
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
+// Para manejo de JSON de Mapbox (GeoJSON)
+    implementation ("com.mapbox.geojson:mapbox-geojson:6.3.0")
 
     // Test
     // Turbine for Flow testing
