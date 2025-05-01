@@ -56,7 +56,6 @@ fun MapScreen(
     ) { isGranted ->
         if (isGranted) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                Log.d("MapScreen", "Last location: $location")
                 location?.let {
                     val point = Point.fromLngLat(it.longitude, it.latitude)
                     viewModel.updateUserLocation(point)
@@ -75,7 +74,6 @@ fun MapScreen(
                 permission
             ) == PackageManager.PERMISSION_GRANTED -> {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    Log.d("MapScreen", "Last location: $location")
                     location?.let {
                         val point = Point.fromLngLat(it.longitude, it.latitude)
                         viewModel.updateUserLocation(point)

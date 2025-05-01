@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +40,12 @@ fun FavoritesScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = point.name, style = MaterialTheme.typography.titleMedium)
-                    Text(text = "(${point.latitude}, ${point.longitude})")
+                    Text(
+                        text = "Coordenadas (Latitud: %.4f Longitud: %.4f)".format(
+                            point.latitude,
+                            point.longitude
+                        )
+                    )
                     Text(text = "Tipo: ${point.type.name}")
                     Spacer(modifier = Modifier.height(8.dp))
                     Row {
