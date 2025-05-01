@@ -63,6 +63,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation ("androidx.core:core-ktx:1.9.0")
 
     // Hilt
     implementation ("com.google.dagger:hilt-android:2.47")
@@ -111,7 +112,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
 // Para manejo de JSON de Mapbox (GeoJSON)
-    implementation ("com.mapbox.geojson:mapbox-geojson:6.3.0")
+    implementation("com.mapbox.mapboxsdk:mapbox-sdk-geojson:5.8.0-beta.4")
+
+    //
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
 
     // Test
     // Turbine for Flow testing

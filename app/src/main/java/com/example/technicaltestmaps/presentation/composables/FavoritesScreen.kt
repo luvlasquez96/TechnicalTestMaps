@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -23,11 +25,15 @@ import com.example.technicaltestmaps.domain.model.PointType
 
 @Composable
 fun FavoritesScreen(
+    modifier: Modifier = Modifier,
     points: List<FavoritePoint>,
     onShowOnMap: (FavoritePoint) -> Unit,
     onDelete: (Int) -> Unit
 ) {
-    LazyColumn(modifier = Modifier.padding(16.dp)) {
+    LazyColumn(
+        modifier = modifier
+            .padding(16.dp)
+    ) {
         items(points) { point ->
             Card(
                 modifier = Modifier
@@ -53,6 +59,7 @@ fun FavoritesScreen(
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

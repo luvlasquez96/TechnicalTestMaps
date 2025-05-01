@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -84,6 +85,9 @@ class MapViewModel @Inject constructor(
     fun deletePoint(id: Int) {
         viewModelScope.launch {
             favoritePointRepository.deleteFavoritePoint(id)
+            if (_selectedFavoritePoint.value?.id == id) {
+                _selectedFavoritePoint.value = null
+            }
         }
     }
 
