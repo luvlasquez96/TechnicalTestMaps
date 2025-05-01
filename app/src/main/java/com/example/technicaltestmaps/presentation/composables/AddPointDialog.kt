@@ -11,8 +11,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.technicaltestmaps.domain.model.PointType
@@ -40,17 +40,24 @@ fun AddPointDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text("Tipo de punto:")
-                Row {
-                    RadioButton(
-                        selected = pointType == PointType.NORMAL,
-                        onClick = { onTypeChange(PointType.NORMAL) }
-                    )
-                    Text("Normal", modifier = Modifier.padding(end = 16.dp))
-                    RadioButton(
-                        selected = pointType == PointType.ALERT,
-                        onClick = { onTypeChange(PointType.ALERT) }
-                    )
-                    Text("Alerta")
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = pointType == PointType.NORMAL,
+                            onClick = { onTypeChange(PointType.NORMAL) }
+                        )
+                        Text("Normal", modifier = Modifier.padding(end = 16.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = pointType == PointType.ALERT,
+                            onClick = { onTypeChange(PointType.ALERT) }
+                        )
+                        Text("Alerta")
+                    }
                 }
             }
         },

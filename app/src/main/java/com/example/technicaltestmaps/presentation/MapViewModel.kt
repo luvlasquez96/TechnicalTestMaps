@@ -78,7 +78,7 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    fun selectFavoritePoint(point: FavoritePoint) {
+    fun selectFavoritePoint(point: FavoritePoint?) {
         _selectedFavoritePoint.value = point
     }
 

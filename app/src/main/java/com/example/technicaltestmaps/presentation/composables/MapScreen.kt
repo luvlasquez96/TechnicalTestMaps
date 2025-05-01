@@ -2,6 +2,11 @@ package com.example.technicaltestmaps.presentation.composables
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,19 +44,41 @@ fun MapScreen(
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
+    var shouldCenterOnUser by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        val permission = Manifest.permission.ACCESS_FINE_LOCATION
-        if (ContextCompat.checkSelfPermission(
-                context,
-                permission
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                Log.d("MapScreen", "Last location: $location")
                 location?.let {
                     val point = Point.fromLngLat(it.longitude, it.latitude)
                     viewModel.updateUserLocation(point)
                 }
+            }
+        } else {
+            Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val permission = Manifest.permission.ACCESS_FINE_LOCATION
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    Log.d("MapScreen", "Last location: $location")
+                    location?.let {
+                        val point = Point.fromLngLat(it.longitude, it.latitude)
+                        viewModel.updateUserLocation(point)
+                    }
+                }
+            }
+            else -> {
+                permissionLauncher.launch(permission)
             }
         }
     }
@@ -93,6 +120,12 @@ fun MapScreen(
         )
     }
 
+    BackHandler(enabled = !showFavorites) {
+        showFavorites = true
+        shouldCenterOnUser = true
+        viewModel.selectFavoritePoint(null)
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             MapView(
@@ -105,7 +138,9 @@ fun MapScreen(
                 featureCollection = featureCollection,
                 onMapLongClick = { mapboxPoint ->
                     viewModel.onMapLongClick(mapboxPoint)
-                }
+                },
+                shouldCenterOnUser = shouldCenterOnUser,
+                onUserCentered = { shouldCenterOnUser = false }
             )
 
             if (showFavorites && points.isNotEmpty()) {
