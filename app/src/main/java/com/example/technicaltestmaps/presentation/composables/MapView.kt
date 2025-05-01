@@ -3,7 +3,6 @@ package com.example.technicaltestmaps.presentation.composables
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +35,6 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.gestures
-import timber.log.Timber
 
 @Composable
 fun MapView(
@@ -51,15 +49,12 @@ fun MapView(
 ) {
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
-    val annotationManager = remember(mapView) {
+
+    val pointAnnotationManager = remember(mapView) {
         mapView.annotations.createPointAnnotationManager()
-    }
-    val viewAnnotationManager = remember(mapView) {
-        mapView.viewAnnotationManager
     }
 
     val currentSelectedPoint by rememberUpdatedState(selectedPoint)
-    val currentUserLocation by rememberUpdatedState(userLocation)
 
     val styleLoaded = remember { mutableStateOf(false) }
     val hasUserMovedMap = remember { mutableStateOf(false) }
@@ -69,9 +64,9 @@ fun MapView(
         factory = { mapView },
         update = { view ->
             val mapboxMap = view.getMapboxMap()
-
             mapboxMap.loadStyleUri(Style.OUTDOORS) { style ->
-                val safeFeatureCollection = featureCollection ?: FeatureCollection.fromFeatures(emptyList())
+                val safeFeatureCollection =
+                    featureCollection ?: FeatureCollection.fromFeatures(emptyList())
 
                 val source = geoJsonSource("geojson-source") {
                     featureCollection(safeFeatureCollection)
@@ -84,16 +79,6 @@ fun MapView(
                 }
                 style.addLayer(layer)
 
-                // Centrar la cámara si hay ubicación del usuario
-                userLocation?.let {
-                    mapboxMap.setCamera(
-                        CameraOptions.Builder()
-                            .center(it)
-                            .zoom(12.0)
-                            .build()
-                    )
-                }
-
                 val gesturesPlugin = view.gestures
                 gesturesPlugin.addOnMapLongClickListener { point ->
                     onMapLongClick(point)
@@ -105,7 +90,6 @@ fun MapView(
                     }
 
                     override fun onMove(detector: MoveGestureDetector): Boolean = false
-
                     override fun onMoveEnd(detector: MoveGestureDetector) {}
                 })
 
@@ -114,56 +98,53 @@ fun MapView(
         }
     )
 
-    LaunchedEffect(currentUserLocation, styleLoaded.value) {
-        if (styleLoaded.value && currentUserLocation != null && !hasUserMovedMap.value) {
+    LaunchedEffect(points, userLocation, styleLoaded.value) {
+        if (!styleLoaded.value) return@LaunchedEffect
+
+        pointAnnotationManager.deleteAll()
+
+        userLocation?.let { location ->
+            val bitmap = bitmapFromDrawableRes(context, R.drawable.ic_blue_marker)
+            bitmap?.let { bmp ->
+                val options = PointAnnotationOptions()
+                    .withPoint(location)
+                    .withIconImage(bmp)
+                pointAnnotationManager.create(options)
+            }
+        }
+
+        points.forEach { fav ->
+            val point = Point.fromLngLat(fav.longitude, fav.latitude)
+            val iconRes = if (fav.type == PointType.ALERT)
+                R.drawable.ic_alert_map_location_icon
+            else
+                R.drawable.ic_red_marker
+
+            bitmapFromDrawableRes(context, iconRes)?.let { bmp ->
+                val options = PointAnnotationOptions()
+                    .withPoint(point)
+                    .withIconImage(bmp)
+                pointAnnotationManager.create(options)
+            }
+        }
+    }
+
+    LaunchedEffect(userLocation, styleLoaded.value) {
+        if (styleLoaded.value && userLocation != null && !hasUserMovedMap.value) {
             mapView.getMapboxMap().setCamera(
                 CameraOptions.Builder()
-                    .center(currentUserLocation)
+                    .center(userLocation)
                     .zoom(12.0)
                     .build()
             )
         }
     }
 
-    LaunchedEffect(points, currentSelectedPoint, currentUserLocation, styleLoaded.value) {
-        if (!styleLoaded.value) return@LaunchedEffect
-
-        mapView.getMapboxMap().getStyle()?.let {
-            annotationManager.deleteAll()
-            viewAnnotationManager.removeAllViewAnnotations()
-
-            points.forEach { fav ->
-                val point = Point.fromLngLat(fav.longitude, fav.latitude)
-                val iconRes = if (fav.type == PointType.ALERT)
-                    R.drawable.ic_alert_map_location_icon
-                else
-                    R.drawable.ic_red_marker
-
-                bitmapFromDrawableRes(context, iconRes)?.let { bmp ->
-                    val options = PointAnnotationOptions()
-                        .withPoint(point)
-                        .withIconImage(bmp)
-                    annotationManager.create(options)
-                }
-            }
-
-            currentUserLocation?.let {
-                Timber.tag("MapView").d("User location: $currentUserLocation")
-                val bitmap = bitmapFromDrawableRes(context, R.drawable.ic_blue_marker)
-                bitmap?.let { bmp ->
-                    val options = PointAnnotationOptions()
-                        .withPoint(it)
-                        .withIconImage(bmp)
-                    annotationManager.create(options)
-                }
-            }
-        }
-    }
-
     LaunchedEffect(currentSelectedPoint, styleLoaded.value) {
         if (styleLoaded.value && currentSelectedPoint != null) {
             val mapboxMap = mapView.getMapboxMap()
-            val target = Point.fromLngLat(currentSelectedPoint!!.longitude, currentSelectedPoint!!.latitude)
+            val target =
+                Point.fromLngLat(currentSelectedPoint!!.longitude, currentSelectedPoint!!.latitude)
             mapboxMap.easeTo(
                 CameraOptions.Builder()
                     .center(target)
@@ -176,13 +157,16 @@ fun MapView(
         }
     }
 
-    LaunchedEffect(shouldCenterOnUser, currentUserLocation, styleLoaded.value) {
-        if (shouldCenterOnUser && styleLoaded.value && currentUserLocation != null) {
-            mapView.getMapboxMap().setCamera(
+    LaunchedEffect(shouldCenterOnUser, userLocation, styleLoaded.value) {
+        if (shouldCenterOnUser && styleLoaded.value && userLocation != null) {
+            mapView.getMapboxMap().easeTo(
                 CameraOptions.Builder()
-                    .center(currentUserLocation)
+                    .center(userLocation)
                     .zoom(12.0)
-                    .build()
+                    .build(),
+                MapAnimationOptions.mapAnimationOptions {
+                    duration(1000L)
+                }
             )
             onUserCentered()
         }

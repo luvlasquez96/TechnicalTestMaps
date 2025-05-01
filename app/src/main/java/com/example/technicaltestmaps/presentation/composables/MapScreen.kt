@@ -11,9 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -25,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -144,18 +149,32 @@ fun MapScreen(
             )
 
             if (showFavorites && points.isNotEmpty()) {
-                FavoritesScreen(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.4f),
-                    points = points,
-                    onShowOnMap = { point ->
-                        viewModel.selectFavoritePoint(point)
-                        onShowPointOnMap(point)
-                        showFavorites = false
-                    },
-                    onDelete = { id -> viewModel.deletePoint(id) }
-                )
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.4f)) {
+                    FavoritesScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        points = points,
+                        onShowOnMap = { point ->
+                            viewModel.selectFavoritePoint(point)
+                            onShowPointOnMap(point)
+                            showFavorites = false
+                        },
+                        onDelete = { id -> viewModel.deletePoint(id) }
+                    )
+
+                    FloatingActionButton(
+                        onClick = { shouldCenterOnUser = true },
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .offset(y = (-24).dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Centrar en mi ubicación"
+                        )
+                    }
+                }
             }
         }
 
@@ -167,6 +186,18 @@ fun MapScreen(
                     .padding(16.dp)
             ) {
                 Icon(imageVector = Icons.Default.Menu, contentDescription = "Mostrar favoritos")
+            }
+
+            FloatingActionButton(
+                onClick = { shouldCenterOnUser = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 88.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Centrar en mi ubicación"
+                )
             }
         }
     }
