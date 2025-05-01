@@ -6,20 +6,25 @@ import com.example.technicaltestmaps.domain.model.FavoritePoint
 import com.example.technicaltestmaps.domain.model.PointType
 import com.example.technicaltestmaps.domain.repository.FavoritePointRepository
 import com.example.technicaltestmaps.domain.repository.GeoJsonRepository
+import com.example.technicaltestmaps.domain.usecase.AddFavoritePointUseCase
+import com.example.technicaltestmaps.domain.usecase.DeleteFavoritePointUseCase
+import com.example.technicaltestmaps.domain.usecase.FetchGeoJsonUseCase
+import com.example.technicaltestmaps.domain.usecase.GetFavoritePointUseCase
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    private val favoritePointRepository: FavoritePointRepository,
-    private val geoJsonRepository: GeoJsonRepository
+    private val addFavoritePointUseCase: AddFavoritePointUseCase,
+    private val deleteFavoritePointUseCase: DeleteFavoritePointUseCase,
+    private val getFavoritePointUseCase: GetFavoritePointUseCase,
+    private val fetchGeoJsonUseCase: FetchGeoJsonUseCase
 ) : ViewModel() {
 
     private val _favoritePoints = MutableStateFlow<List<FavoritePoint>>(emptyList())
@@ -44,22 +49,20 @@ class MapViewModel @Inject constructor(
 
     private fun loadFavoritePoints() {
         viewModelScope.launch {
-            favoritePointRepository.getAllFavoritePoints()
-                .collect { points ->
-                    _favoritePoints.value = points
-                }
+            getFavoritePointUseCase().collect { points ->
+                _favoritePoints.value = points
+            }
         }
     }
 
     private fun loadGeoJson() {
         viewModelScope.launch {
-            val result = geoJsonRepository.fetchGeoJson()
+            val result = fetchGeoJsonUseCase()
             _featureCollection.value = result
         }
     }
 
     fun onMapLongClick(point: Point) {
-        val pointType = PointType.NORMAL
         _pendingPointToSave.value = point
     }
 
@@ -73,7 +76,7 @@ class MapViewModel @Inject constructor(
                 longitude = point.longitude(),
                 type = type
             )
-            favoritePointRepository.addFavoritePoint(newPoint)
+            addFavoritePointUseCase(newPoint)
             _pendingPointToSave.value = null
         }
     }
@@ -84,7 +87,7 @@ class MapViewModel @Inject constructor(
 
     fun deletePoint(id: Int) {
         viewModelScope.launch {
-            favoritePointRepository.deleteFavoritePoint(id)
+            deleteFavoritePointUseCase(id)
             if (_selectedFavoritePoint.value?.id == id) {
                 _selectedFavoritePoint.value = null
             }
