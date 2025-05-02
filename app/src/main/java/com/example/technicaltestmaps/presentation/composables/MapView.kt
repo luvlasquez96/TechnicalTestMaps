@@ -1,5 +1,6 @@
 package com.example.technicaltestmaps.presentation.composables
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -19,12 +20,15 @@ import com.example.technicaltestmaps.R
 import com.example.technicaltestmaps.domain.model.FavoritePoint
 import com.example.technicaltestmaps.domain.model.PointType
 import com.mapbox.android.gestures.MoveGestureDetector
+import com.mapbox.bindgen.Value
+import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.generated.circleLayer
 import com.mapbox.maps.extension.style.layers.generated.fillLayer
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
@@ -59,6 +63,14 @@ fun MapView(
     val styleLoaded = remember { mutableStateOf(false) }
     val hasUserMovedMap = remember { mutableStateOf(false) }
 
+    val alertAnimator = remember {
+        ValueAnimator.ofFloat(4f, 12f).apply {
+            duration = 1000
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+        }
+    }
+
     AndroidView(
         modifier = modifier,
         factory = { mapView },
@@ -78,6 +90,38 @@ fun MapView(
                     fillOutlineColor("rgba(0, 0, 255, 1.0)")
                 }
                 style.addLayer(layer)
+
+                // Add alert points source
+                val alertPoints = points.filter { it.type == PointType.ALERT }
+                val alertFeatures = alertPoints.map {
+                    Feature.fromGeometry(Point.fromLngLat(it.longitude, it.latitude))
+                }
+                val alertSource = geoJsonSource("alert-source") {
+                    featureCollection(FeatureCollection.fromFeatures(alertFeatures))
+                }
+                style.addSource(alertSource)
+
+                // Add pulsing circle layer for alerts
+                val alertLayer = circleLayer("alert-layer", "alert-source") {
+                    circleColor("#FF0000")
+                    circleRadius(8.0)
+                    circleOpacity(0.6)
+                    circleStrokeWidth(1.0)
+                    circleStrokeColor("#880000")
+                }
+                style.addLayer(alertLayer)
+
+// Verifica que la capa exista y sea de tipo CircleLayer
+                alertAnimator.addUpdateListener {
+                    val radius = it.animatedValue as Float
+                    mapView.getMapboxMap().getStyle()?.setStyleLayerProperty(
+                        "alert-layer",
+                        "circle-radius",
+                        Value(radius.toDouble())
+                    )
+                }
+
+                alertAnimator.start()
 
                 val gesturesPlugin = view.gestures
                 gesturesPlugin.addOnMapLongClickListener { point ->
@@ -113,13 +157,9 @@ fun MapView(
             }
         }
 
-        points.forEach { fav ->
+        points.filter { it.type != PointType.ALERT }.forEach { fav ->
             val point = Point.fromLngLat(fav.longitude, fav.latitude)
-            val iconRes = if (fav.type == PointType.ALERT)
-                R.drawable.ic_alert_map_location_icon
-            else
-                R.drawable.ic_red_marker
-
+            val iconRes = R.drawable.ic_red_marker
             bitmapFromDrawableRes(context, iconRes)?.let { bmp ->
                 val options = PointAnnotationOptions()
                     .withPoint(point)

@@ -2,7 +2,6 @@ package com.example.technicaltestmaps.presentation.composables
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -13,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
@@ -29,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -80,6 +76,7 @@ fun MapScreen(
                     }
                 }
             }
+
             else -> {
                 permissionLauncher.launch(permission)
             }
@@ -147,9 +144,11 @@ fun MapScreen(
             )
 
             if (showFavorites && points.isNotEmpty()) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.4f)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.4f)
+                ) {
                     FavoritesScreen(
                         modifier = Modifier.fillMaxSize(),
                         points = points,
@@ -191,6 +190,19 @@ fun MapScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 88.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Centrar en mi ubicación"
+                )
+            }
+        }
+        if (showFavorites && points.isEmpty()) {
+            FloatingActionButton(
+                onClick = { shouldCenterOnUser = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,

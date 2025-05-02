@@ -41,8 +41,6 @@ android {
     }
 }
 
-val nav_version = "2.5.3"
-val room_version = "2.5.1"
 val coroutines_version = "1.6.4"
 val lifecycle_version = "2.5.1"
 
@@ -104,9 +102,6 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
-
-    // Google Fonts
-    implementation ("androidx.compose.ui:ui-text-google-fonts:1.7.3")
 
     // Para hacer HTTP simple
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
