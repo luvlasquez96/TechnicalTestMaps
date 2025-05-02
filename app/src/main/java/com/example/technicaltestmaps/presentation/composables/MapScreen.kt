@@ -35,6 +35,7 @@ import com.example.technicaltestmaps.domain.model.PointType
 import com.example.technicaltestmaps.presentation.MapViewModel
 import com.google.android.gms.location.LocationServices
 import com.mapbox.geojson.Point
+import com.example.technicaltestmaps.R
 
 @Composable
 fun MapScreen(
@@ -58,7 +59,7 @@ fun MapScreen(
                 }
             }
         } else {
-            Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, R.string.location_permission_denied, Toast.LENGTH_LONG).show()
         }
     }
 

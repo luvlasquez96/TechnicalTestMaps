@@ -18,8 +18,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.technicaltestmaps.R
 import com.example.technicaltestmaps.domain.model.PointType
 
 @Composable
@@ -33,25 +35,28 @@ fun AddPointDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Agregar punto favorito") },
+        title = { Text(stringResource(id = R.string.add_favorite_point)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = pointName,
                     onValueChange = onNameChange,
-                    label = { Text("Nombre del punto") }
+                    label = { Text(stringResource(id = R.string.point_name)) }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Tipo de punto:")
+                Text(stringResource(id = R.string.point_type))
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = pointType == PointType.NORMAL,
                             onClick = { onTypeChange(PointType.NORMAL) }
                         )
-                        Text("Normal", modifier = Modifier.padding(end = 16.dp))
+                        Text(
+                            stringResource(id = R.string.normal),
+                            modifier = Modifier.padding(end = 16.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -61,19 +66,19 @@ fun AddPointDialog(
                             selected = pointType == PointType.ALERT,
                             onClick = { onTypeChange(PointType.ALERT) }
                         )
-                        Text("Alerta")
+                        Text(stringResource(id = R.string.alert))
                     }
                 }
             }
         },
         confirmButton = {
             Button(onClick = onConfirm) {
-                Text("Guardar")
+                Text(stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             OutlinedButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )

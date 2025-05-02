@@ -91,7 +91,6 @@ fun MapView(
                 }
                 style.addLayer(layer)
 
-                // Add alert points source
                 val alertPoints = points.filter { it.type == PointType.ALERT }
                 val alertFeatures = alertPoints.map {
                     Feature.fromGeometry(Point.fromLngLat(it.longitude, it.latitude))
@@ -101,7 +100,6 @@ fun MapView(
                 }
                 style.addSource(alertSource)
 
-                // Add pulsing circle layer for alerts
                 val alertLayer = circleLayer("alert-layer", "alert-source") {
                     circleColor("#FF0000")
                     circleRadius(8.0)
@@ -111,7 +109,6 @@ fun MapView(
                 }
                 style.addLayer(alertLayer)
 
-// Verifica que la capa exista y sea de tipo CircleLayer
                 alertAnimator.addUpdateListener {
                     val radius = it.animatedValue as Float
                     mapView.getMapboxMap().getStyle()?.setStyleLayerProperty(
